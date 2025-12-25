@@ -227,15 +227,7 @@ function initThreeJS() {
         }
     }, 8000); // 8 Seconds Timeout
 
-    // Instant Entry: Force remove loading screen after short delay
-    // as critical assets are now lazy-loaded.
-    setTimeout(() => {
-        const s = document.getElementById('loading-screen');
-        if (s) {
-            s.style.opacity = '0';
-            setTimeout(() => s.remove(), 500);
-        }
-    }, 1000);
+
 
     loadingManager.onLoad = () => {
         const s = document.getElementById('loading-screen');
@@ -310,7 +302,7 @@ function initThreeJS() {
     scene.add(zombieGroup);
 
     // 8. Load Character
-    loadCharacterModel('gura'); // Gura must be loaded first to set reference
+    loadCharacterModel('gura', true); // Critical Path load (Screen will wait)
 
     // 9. Load NPCs (Lazy / Background)
     loadNPC(backgroundManager);
@@ -329,11 +321,10 @@ function initThreeJS() {
 let REFERENCE_HEIGHT = null;
 
 // --- Character Loading System ---
-function loadCharacterModel(charName) {
-    console.log(`Loading character: ${charName}`);
+function loadCharacterModel(charName, isCritical = false) {
+    console.log(`Loading character: ${charName} (Critical: ${isCritical})`);
 
-    // Use Background Manager to avoid blocking entry
-    const loader = new GLTFLoader(backgroundManager || loadingManager);
+    const loader = new GLTFLoader(isCritical ? loadingManager : (backgroundManager || loadingManager));
     const path = `${charName}/scene.gltf`;
 
     loader.load(path, (gltf) => {
