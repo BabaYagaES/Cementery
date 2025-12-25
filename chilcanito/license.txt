@@ -1,0 +1,11 @@
+Model Information:
+* title:	Zombie Warrior
+* source:	https://sketchfab.com/3d-models/zombie-warrior-2457028ac0ca4214bd1f5dc3b9d11129
+* author:	Aleksandr (https://sketchfab.com/xa3apg)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Zombie Warrior" (https://sketchfab.com/3d-models/zombie-warrior-2457028ac0ca4214bd1f5dc3b9d11129) by Aleksandr (https://sketchfab.com/xa3apg) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

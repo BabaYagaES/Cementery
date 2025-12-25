@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso - Experiencia Virtual Cementerio</title>
+    <meta name="description" content="Portal de acceso a la guía del cementerio municipal.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Import Three.js as an Import Map for clean module usage -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+                "simplex-noise": "https://unpkg.com/simplex-noise@4.0.1/dist/esm/simplex-noise.js",
+                "trystero": "https://esm.sh/trystero@0.19.0/mqtt"
+            }
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/nipplejs/0.10.1/nipplejs.min.js"></script>
+    <style>
+        .name-tag {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            pointer-events: none;
+            white-space: nowrap;
+            text-shadow: 0 1px 2px black;
+            font-weight: 600;
+            transform: translate(-50%, -100%);
+            display: none;
+            /* Hidden until projected */
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen"
+        style="position:fixed; top:0; left:0; width:100%; height:100%; background:#111; z-index:9999; display:flex; flex-direction:column; align-items:center; justify-content:center; color:white; font-family:'Outfit', sans-serif; transition: opacity 0.5s;">
+        <h1 style="margin-bottom:20px;">Cargando Cementerio...</h1>
+        <div style="width:200px; height:4px; background:#333; border-radius:2px; overflow:hidden;">
+            <div id="loading-bar" style="width:0%; height:100%; background:#4caf50; transition: width 0.2s;"></div>
+        </div>
+        <p id="loading-text" style="font-size:12px; margin-top:10px; opacity:0.7;">Conectando con el más allá...</p>
+    </div>
+
+    <!-- 3D Canvas Container -->
+    <div id="scene-container"></div>
+
+    <main class="login-container" id="loginContainer">
+        <!-- New Image Side -->
+        <div class="login-image-side">
+            <div class="decorative-circle circle-1"></div>
+            <div class="decorative-circle circle-2"></div>
+            <div class="image-overlay-text">
+                <h2>Conectando Historias</h2>
+                <p>Explora, recuerda y honra la memoria en un entorno digital inmersivo.</p>
+            </div>
+        </div>
+
+        <!-- Existing Login Form Side -->
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-container">
+                    <svg class="municipal-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M12 21.6C12 21.6 4.8 14.4 4.8 8.4C4.8 4.42355 8.02355 1.2 12 1.2C15.9765 1.2 19.2 4.42355 19.2 8.4C19.2 14.4 12 21.6 12 21.6ZM12 10.8C13.3255 10.8 14.4 9.72548 14.4 8.4C14.4 7.07452 13.3255 6 12 6C10.6745 6 9.6 7.07452 9.6 8.4C9.6 9.72548 10.6745 10.8 12 10.8Z"
+                            fill="currentColor" />
+                        <path d="M20 18V22H4V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                    </svg>
+                </div>
+                <h1>Experiencia Virtual</h1>
+                <p>Explora el cementerio digitalmente</p>
+            </div>
+
+            <form class="login-form" id="loginForm">
+                <div class="input-group">
+                    <label for="username">Nombre de Usuario</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="username" name="username" placeholder="Escribe tu nombre..." required
+                            autocomplete="off">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="auth-buttons">
+                    <button type="submit" id="start-btn" class="btn-primary">Iniciar Sesión</button>
+                    <button type="button" id="register-btn" class="btn-secondary">Registrarse</button>
+                </div>
+            </form>
+
+
+
+            <footer class="login-footer">
+                <p>© 2024 Experiencia Virtual. Todos los derechos reservados.</p>
+                <div class="footer-links">
+                    <a href="#">Privacidad</a>
+                    <span class="separator">•</span>
+                    <a href="#">Ayuda</a>
+                </div>
+            </footer>
+        </div>
+    </main>
+
+    <div id="welcome-message" class="hidden">
+        <h1>¡Bienvenido, Visitante!</h1>
+        <p>Soy "Gura", tu guía oficial del Cementerio Municipal.</p>
+        <button id="start-tour-btn">Comenzar Recorrido</button>
+    </div>
+
+    <div id="deceased-form-container" class="hidden">
+        <div class="form-card">
+            <div class="form-header">
+                <h2>Búsqueda de Paz</h2>
+                <p>Encuentra el lugar de descanso de tus seres queridos.</p>
+            </div>
+            <form id="deceasedForm">
+                <div class="search-input-group">
+                    <input type="text" id="deceased-name" required placeholder="Nombre del Fallecido"
+                        autocomplete="off">
+                    <span class="highlight"></span>
+                    <span class="bar"></span>
+                </div>
+                <div class="search-input-group">
+                    <input type="date" id="deceased-date">
+                    <span class="highlight"></span>
+                    <span class="bar"></span>
+                </div>
+                <button type="submit" class="btn-search">
+                    <svg viewBox="0 0 24 24" fill="none" class="search-icon">
+                        <path
+                            d="M21 21L15 15M17 10C17 13.866 13.866 17 10 17C6.13401 17 3 13.866 3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10Z"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Buscar Ubicación
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- HUD Controls (Moved outside to be always visible) -->
+    <div class="hud-controls">
+        <button id="btn-respawn" class="hud-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                <path d="M3 3v5h5"></path>
+            </svg>
+            Volver al Respawn
+        </button>
+        <button id="btn-char-select" class="hud-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Elegir Personaje
+        </button>
+    </div>
+
+    <!-- Character Selection Modal -->
+    <div id="character-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Seleccionar Personaje</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="placeholder-text">Selecciona tu avatar:</p>
+                <div class="character-grid">
+                    <div class="char-slot active" data-char="gura">Gura</div>
+                    <div class="char-slot" data-char="amelia">Amelia</div>
+                    <div class="char-slot" data-char="kiara">Kiara</div>
+                    <div class="char-slot" data-char="mori">Mori</div>
+                    <div class="char-slot" data-char="nino">Nino</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Deceased Info Card (Hidden by default) -->
+    <div id="deceased-info-card" class="hidden">
+        <div class="info-card-glass">
+            <div class="info-header">
+                <div class="rip-icon">RIP</div>
+                <h2 id="info-name">Nombre del Difunto</h2>
+            </div>
+            <div class="info-body">
+                <div class="info-row">
+                    <span class="label">Fecha</span>
+                    <span class="value" id="info-date">--/--/----</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">Ubicación</span>
+                    <span class="value">Sector Norte, Fila 4</span>
+                </div>
+                <div class="info-quote">
+                    "Aquí descansa en paz eterna."
+                </div>
+            </div>
+            <button id="close-info-btn">Nueva Búsqueda</button>
+        </div>
+    </div>
+
+    <!-- Chat System -->
+    <div id="chat-ui" class="hidden">
+        <div id="chat-messages">
+            <div class="chat-msg system">¡Bienvenido al chat!</div>
+        </div>
+        <div id="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Escribe..." maxlength="40">
+            <button id="chat-send">➤</button>
+        </div>
+    </div>
+    <button id="chat-toggle-btn" class="hidden">💬</button>
+
+    <!-- Mobile Controls -->
+    <div id="mobile-controls">
+        <div id="joystick-zone"></div>
+        <button id="mobile-jump-btn">SALTAR</button>
+    </div>
+
+    <script type="module" src="script.js"></script>
+</body>
+
+</html>

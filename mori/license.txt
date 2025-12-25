@@ -1,0 +1,11 @@
+Model Information:
+* title:	Smol Calli - Mori Calliope, HoloMyth
+* source:	https://sketchfab.com/3d-models/smol-calli-mori-calliope-holomyth-bac01c63d3074f28a6cb1d2d8b3b3ec2
+* author:	Seafoam (https://sketchfab.com/seafoam)
+
+Model License:
+* license type:	CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
+* requirements:	Author must be credited. No commercial use.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Smol Calli - Mori Calliope, HoloMyth" (https://sketchfab.com/3d-models/smol-calli-mori-calliope-holomyth-bac01c63d3074f28a6cb1d2d8b3b3ec2) by Seafoam (https://sketchfab.com/seafoam) licensed under CC-BY-NC-4.0 (http://creativecommons.org/licenses/by-nc/4.0/)
