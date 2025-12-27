@@ -1112,8 +1112,11 @@ function initMultiplayer() {
     // We rotate brokers if possible, or just pick a very stable one.
     // 'wss://broker.emqx.io:8084/mqtt' and 'wss://broker.hivemq.com:8000/mqtt' are good choices.
     const config = {
-        appId: 'cementerio-virtual-v9-stun-fix',
-        brokerUrl: 'wss://broker.emqx.io:8084/mqtt',
+        appId: 'cementerio-virtual-v10-trystero23',
+        brokerUrls: [
+            'wss://broker.emqx.io:8084/mqtt',
+            'wss://broker.hivemq.com:8000/mqtt'
+        ],
         rtcConfig: {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -1125,9 +1128,7 @@ function initMultiplayer() {
     };
 
     // Feedback
-    // Feedback
     console.log("Sistema: Conectando al servidor...");
-
 
     try {
         room = joinRoom(config, 'lobby');
@@ -1136,9 +1137,11 @@ function initMultiplayer() {
             console.log("Sistema: ¡Conexión establecida!");
         }, 1000);
     } catch (e) {
-        console.error("Multiplayer Error", e);
-        console.error("Multiplayer Error", e);
-
+        console.error("Multiplayer Critical Error", e);
+        // FORCE CONTINUE: If multiplayer fails, we must still allow the game to load
+        // We notify via console but don't stop execution.
+        const loadingText = document.getElementById('loading-text');
+        if (loadingText) loadingText.innerText = "Modo desconectado (Error multijugador)";
     }
 
     // Action: update -> sends { x, y, z, ry, char, anim, name }
