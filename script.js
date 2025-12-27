@@ -1112,8 +1112,12 @@ function initMultiplayer() {
     // We rotate brokers if possible, or just pick a very stable one.
     // 'wss://broker.emqx.io:8084/mqtt' and 'wss://broker.hivemq.com:8000/mqtt' are good choices.
     const config = {
-        appId: 'cementerio-virtual-v5-fixed',
-        brokerUrl: 'wss://broker.emqx.io:8084/mqtt'
+        appId: 'cementerio-virtual-v6-retry',
+        // Try all known parameter names for Trystero versions
+        brokerUrl: 'wss://broker.emqx.io:8084/mqtt',
+        brokerUrls: ['wss://broker.emqx.io:8084/mqtt'],
+        mqttUrl: 'wss://broker.emqx.io:8084/mqtt',
+        password: 'public_password_placeholder' // sometimes required to trigger auth flow
     };
 
     // Feedback
