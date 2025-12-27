@@ -1,0 +1,13 @@
+{
+  "name": "cementerio-virtual",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "serve -S -C -p ${PORT:-3000} ."
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
