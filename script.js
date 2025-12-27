@@ -1106,17 +1106,20 @@ function initMultiplayer() {
     };
 
     // Feedback
-    addChatMessage('Sistema', 'Conectando al servidor...', false);
+    // Feedback
+    console.log("Sistema: Conectando al servidor...");
+
 
     try {
         room = joinRoom(config, 'lobby');
-        // Success Feedback (Delayed to simulate handshake)
+        // Success Feedback
         setTimeout(() => {
-            addChatMessage('Sistema', '¡Conexión establecida!', false);
+            console.log("Sistema: ¡Conexión establecida!");
         }, 1000);
     } catch (e) {
         console.error("Multiplayer Error", e);
-        addChatMessage('Sistema', 'Error de conexión: ' + e.message, false);
+        console.error("Multiplayer Error", e);
+
     }
 
     // Action: update -> sends { x, y, z, ry, char, anim, name }
@@ -1127,7 +1130,8 @@ function initMultiplayer() {
     // Log connection
     room.onPeerJoin(peerId => {
         console.log(`Peer joined: ${peerId}`);
-        addChatMessage('Sistema', 'Un visitante ha entrado.', true);
+        console.log(`Peer joined: ${peerId}`);
+
 
         // Update Count
         const count = Object.keys(peers).length + 2; // +1 new peer, +1 self
