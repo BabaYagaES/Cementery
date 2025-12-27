@@ -958,6 +958,17 @@ function setupUI() {
         const input = document.getElementById('username');
         if (input && input.value.trim() !== "") {
             myUsername = input.value.trim();
+
+            // Auto-login to Hack.chat
+            const chatFrame = document.querySelector('#external-chat-container iframe');
+            if (chatFrame) {
+                // Using ?channel&nickname=Name format which is standard for many hack.chat forks/clients
+                // Or trying ?channel#nickname
+                // Based on common hack.chat behavior, ?channel&nick=Name is often used by clients.
+                // But the official hack.chat just uses ?channel and prompts.
+                // However, there is a known trick: ?your-channel#your-nickname
+                chatFrame.src = `https://hack.chat/?cementerio-guia#${encodeURIComponent(myUsername)}`;
+            }
         }
 
         // Init local name tag
