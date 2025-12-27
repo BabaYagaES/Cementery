@@ -1112,8 +1112,11 @@ function initMultiplayer() {
     // We rotate brokers if possible, or just pick a very stable one.
     // 'wss://broker.emqx.io:8084/mqtt' and 'wss://broker.hivemq.com:8000/mqtt' are good choices.
     const config = {
-        appId: 'cementerio-virtual-v7-csp-fix',
-        brokerUrl: 'wss://broker.emqx.io:8084/mqtt'
+        appId: 'cementerio-virtual-v8-final',
+        brokerUrls: [
+            'wss://broker.emqx.io:8084/mqtt',
+            'wss://broker.hivemq.com:8000/mqtt'
+        ]
     };
 
     // Feedback
