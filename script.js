@@ -1097,18 +1097,12 @@ function initMultiplayer() {
         document.body.appendChild(statusDiv);
     }
 
-    // Robust Ice Servers (STUN) for better cross-country connectivity
+    // Robust MQTT Configuration with Fallback Brokers
+    // We rotate brokers if possible, or just pick a very stable one.
+    // 'wss://broker.emqx.io:8084/mqtt' and 'wss://broker.hivemq.com:8000/mqtt' are good choices.
     const config = {
-        appId: 'cementerio-virtual-prod-v1', // Updated Unique App ID
-        rtcConfig: {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' },
-                { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:global.stun.twilio.com:3478' }
-            ]
-        }
+        appId: 'cementerio-virtual-v2-fixed', // Changed AppID to flush cache
+        brokerUrl: 'wss://broker.emqx.io:8084/mqtt' // Explicit reliable broker
     };
 
     // Feedback
