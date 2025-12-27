@@ -95,82 +95,7 @@ let joystickVector = { x: 0, y: 0 }; // Global Joystick
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // FORCE INJECT CHAT STYLES (Fixes Positioning & Caching issues)
-    const style = document.createElement('style');
-    style.textContent = `
-        #chat-ui {
-            position: fixed !important;
-            bottom: 20px !important;
-            left: 20px !important;
-            top: auto !important;
-            right: auto !important;
-            width: 320px !important;
-            height: 250px !important;
-            transform: none !important;
-            margin: 0 !important;
-            display: flex !important;
-            flex-direction: column !important;
-            z-index: 100000 !important;
-            background: rgba(0,0,0,0.4) !important;
-            backdrop-filter: blur(5px);
-            border-radius: 12px;
-            padding: 10px;
-            pointer-events: none;
-        }
-        #chat-messages {
-            flex: 1;
-            overflow-y: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            pointer-events: auto;
-            margin-bottom: 8px;
-        }
-        .chat-msg {
-            background: rgba(0,0,0,0.6);
-            color: white;
-            padding: 4px 8px;
-            margin-top: 4px;
-            border-radius: 6px;
-            font-size: 13px;
-            width: fit-content;
-        }
-        #chat-input-area {
-            display: flex;
-            gap: 5px;
-            background: rgba(0,0,0,0.8) !important;
-            padding: 8px;
-            border-radius: 20px;
-            pointer-events: auto;
-        }
-        #chat-input {
-            flex: 1;
-            background: transparent !important;
-            border: none !important;
-            color: white !important;
-            outline: none;
-            font-family: inherit;
-        }
-        #chat-send {
-            width: 30px; height: 30px;
-            border-radius: 50%;
-            border: none;
-            background: #4caf50;
-            color: white;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-        }
-        /* Mobile Override */
-        @media (max-width: 768px) {
-            #chat-ui {
-                left: 0 !important;
-                bottom: 0 !important;
-                width: 100% !important;
-                border-radius: 20px 20px 0 0;
-            }
-        }
-    `;
-    document.head.appendChild(style);
+    // Style injection for Chat UI has been removed to switch to an external widget.
 
     initThreeJS();
     setupUI();
@@ -301,14 +226,27 @@ function initThreeJS() {
     zombieGroup.visible = false; // Hidden until intro
     scene.add(zombieGroup);
 
-    // 8. Load Character
-    loadCharacterModel('gura', true); // Critical Path load (Screen will wait)
+    // 8. Load Character (Background - Use Placeholder first)
+    loadCharacterModel('gura', false);
 
     // 9. Load NPCs (Lazy / Background)
     loadNPC(backgroundManager);
     loadNekosan(backgroundManager);
     loadRenzoNPC(backgroundManager);
     loadHonda(backgroundManager);
+
+    // Force Load Screen Exit fast for weak hosting
+    setTimeout(() => {
+        const s = document.getElementById('loading-screen');
+        if (s) {
+            s.style.opacity = '0';
+            setTimeout(() => s.remove(), 500);
+        }
+        // Force Placeholder Visible if Gura hasn't arrived
+        if (zombieGroup && !currentCharacterName.includes('gura')) {
+            zombieGroup.visible = true;
+        }
+    }, 2000);
 
     // Resize Handle
     window.addEventListener('resize', onWindowResize, false);
@@ -1044,14 +982,14 @@ function setupUI() {
             const charName = slot.dataset.char;
             if (!charName) return;
 
-            // Keep old position?
-            const oldPos = zombieGroup ? zombieGroup.position.clone() : null;
+            // Feedback
+            if (typeof addChatMessage === 'function') {
+                addChatMessage('Sistema', `Solicitando cambio a ${charName}...`, false);
+            }
+            console.log("Switching to", charName);
 
-            loadCharacterModel(charName);
+            loadCharacterModel(charName, false); // Background load
             modal.classList.add('hidden');
-
-            // NOTE: loadCharacterModel uses respawnPlayer if it's a fresh load logic, 
-            // but we will patch logic to simply respect position if defined
         });
     });
 
@@ -1103,32 +1041,7 @@ function startIntro() {
     // Start Multiplayer
     initMultiplayer();
 
-    // Force Chat Visibility Logic
-    const chat = document.getElementById('chat-ui');
-    const toggle = document.getElementById('chat-toggle-btn');
-    const isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-
-    if (chat) {
-        chat.classList.remove('hidden');
-        // Ensure it is on top
-        chat.style.zIndex = '2000';
-
-        if (!isMobile) {
-            chat.style.display = 'flex'; // Desktop: Force Visible
-            chat.style.bottom = '20px';
-            chat.style.left = '20px';
-            if (toggle) toggle.style.display = 'none';
-        } else {
-            // Mobile: Let CSS handle bottom transition
-            // But ensure it is not display:none
-            chat.style.display = 'flex';
-            // It might be off-screen by CSS (bottom: -250px)
-            if (toggle) {
-                toggle.classList.remove('hidden');
-                toggle.style.display = 'flex';
-            }
-        }
-    }
+    // External Widget is now handled in HTML directly.
 }
 
 // --- Textures Utils ---
@@ -1220,6 +1133,8 @@ function initMultiplayer() {
     // Log connection
     room.onPeerJoin(peerId => {
         console.log(`Peer joined: ${peerId}`);
+        addChatMessage('Sistema', 'Un visitante ha entrado.', true);
+
         // Update Count
         const count = Object.keys(peers).length + 2; // +1 new peer, +1 self
         if (statusDiv) statusDiv.innerText = `● En línea: ${count}`;
@@ -1258,48 +1173,7 @@ function initMultiplayer() {
         updatePeer(peerId, data);
     });
 
-    // --- Chat System ---
-    const [sendChat, getChat] = room.makeAction('chat');
-    getChat((data, peerId) => {
-        const pName = peers[peerId] && peers[peerId].nameTag ? peers[peerId].nameTag.innerText : '???';
-        addChatMessage(pName, data, false);
-    });
-
-    const chatInput = document.getElementById('chat-input');
-    const chatSend = document.getElementById('chat-send');
-    const chatUI = document.getElementById('chat-ui');
-    const chatToggle = document.getElementById('chat-toggle-btn');
-
-    // Mobile Toggle
-    if (chatToggle) {
-        chatToggle.classList.remove('hidden'); // Show toggle
-        chatToggle.addEventListener('click', () => {
-            chatUI.classList.toggle('active');
-            if (chatUI.classList.contains('active')) setTimeout(() => chatInput.focus(), 100);
-        });
-    }
-
-    // Unhide Chat Block
-    if (chatUI) chatUI.classList.remove('hidden');
-
-    const doSend = () => {
-        const txt = chatInput.value.trim();
-        if (txt) {
-            sendChat(txt); // Network
-            addChatMessage(myUsername, txt, true); // Local
-            chatInput.value = '';
-        }
-    };
-
-    if (chatSend) chatSend.addEventListener('click', doSend);
-    if (chatInput) {
-        chatInput.addEventListener('keydown', (e) => {
-            e.stopPropagation(); // Critical: Don't move while typing
-            if (e.key === 'Enter') doSend();
-        });
-        chatInput.addEventListener('focus', () => { isGuiding = true; }); // Pause controls? keys ignored if focused usually but better safe
-        chatInput.addEventListener('blur', () => { isGuiding = false; });
-    }
+    // Chat system has been removed in favor of external widget.
 
 
 }
@@ -1317,10 +1191,22 @@ function createPeer(id, data) {
     };
     scene.add(peers[id].mesh);
 
+    // Placeholder for Peer
+    const phGeo = new THREE.CapsuleGeometry(0.5, 1.5, 4, 8);
+    const phMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.5 });
+    const placeholder = new THREE.Mesh(phGeo, phMat);
+    placeholder.userData.isPlaceholder = true;
+    placeholder.castShadow = true;
+    peers[id].mesh.add(placeholder);
+
     // Load actual GLTF
     const loader = new GLTFLoader();
     loader.load(`${data.char}/scene.gltf`, (gltf) => {
         if (!peers[id]) return;
+
+        // Remove Placeholder
+        const ph = peers[id].mesh.children.find(c => c.userData.isPlaceholder);
+        if (ph) peers[id].mesh.remove(ph);
 
         const model = gltf.scene;
 
@@ -1361,6 +1247,13 @@ function createPeer(id, data) {
                 peers[id].currentAction = action;
             }
         }
+    }, undefined, (err) => {
+        console.error(`Error loading peer ${data.char}:`, err);
+        // Leave placeholder (optional: change color)
+        if (peers[id]) {
+            const ph = peers[id].mesh.children.find(c => c.userData.isPlaceholder);
+            if (ph) ph.material.color.setHex(0xff0000); // Red error
+        }
     });
 }
 
@@ -1382,9 +1275,20 @@ function updatePeer(id, data) {
         }
 
         // Reload new model
+        // Show Placeholder while switching
+        const phGeo = new THREE.CapsuleGeometry(0.5, 1.5, 4, 8);
+        const phMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.5 });
+        const placeholder = new THREE.Mesh(phGeo, phMat);
+        placeholder.userData.isPlaceholder = true;
+        p.mesh.add(placeholder);
+
         const loader = new GLTFLoader();
         loader.load(`${data.char}/scene.gltf`, (gltf) => {
             if (!peers[id]) return; // Peer might have left
+
+            // Remove Placeholder
+            const ph = p.mesh.children.find(c => c.userData.isPlaceholder);
+            if (ph) p.mesh.remove(ph);
 
             const model = gltf.scene;
 
@@ -1427,6 +1331,11 @@ function updatePeer(id, data) {
                     p.currentAction = action;
                 }
             }
+        }, undefined, (err) => {
+            console.error(`Error swapping to ${data.char}:`, err);
+            // Keep placeholder, maybe red?
+            const ph = p.mesh.children.find(c => c.userData.isPlaceholder);
+            if (ph) ph.material.color.setHex(0xff0000);
         });
     }
 
@@ -2170,4 +2079,4 @@ function toggleHonda() {
 
 
 // --- Chat Utils ---
-function addChatMessage(name, text, isSelf) { const list = document.getElementById('chat-messages'); if (!list) return; const div = document.createElement('div'); div.className = 'chat-msg'; if (isSelf) div.style.background = 'rgba(76, 175, 80, 0.7)'; div.innerHTML = '<strong>' + name + ':</strong> ' + text; list.appendChild(div); list.scrollTop = list.scrollHeight; }
+// Chat functions removed.
