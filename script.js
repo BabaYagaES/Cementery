@@ -210,7 +210,7 @@ function initThreeJS() {
     controls.dampingFactor = 0.05;
     controls.minDistance = 2;
     controls.maxDistance = 40;
-    controls.maxPolarAngle = Math.PI / 2 - 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.3; // Limit angle to prevent looking up from under ground
 
     // 7. Initial Generation
     updateChunks(0, 0);
@@ -850,7 +850,8 @@ function handleMovement(delta) {
     }
 
     // 6. Camera Follow
-    controls.target.copy(zombieGroup.position);
+    // Focus on head/chest height instead of feet
+    controls.target.copy(zombieGroup.position.clone().add(new THREE.Vector3(0, 1.4, 0)));
     controls.update();
     camera.position.add(horizontalMove);
 }
@@ -1226,6 +1227,15 @@ function createPeer(id, data) {
     placeholder.userData.isPlaceholder = true;
     placeholder.castShadow = true;
     peers[id].mesh.add(placeholder);
+
+    // Mobile Performance Optimization:
+    // If on mobile and we already have > 3 peers, do NOT load the heavy GLTF.
+    // Keep them as capsules to prevent crashing.
+    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 800;
+    if (isMobile && Object.keys(peers).length > 3) {
+        console.warn("Mobile limit reached: using placeholder for peer", id);
+        return;
+    }
 
     // Load actual GLTF
     const loader = new GLTFLoader();
