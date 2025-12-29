@@ -1113,14 +1113,8 @@ function initMultiplayer() {
     // We rotate brokers if possible, or just pick a very stable one.
     // 'wss://broker.emqx.io:8084/mqtt' and 'wss://broker.hivemq.com:8000/mqtt' are good choices.
     const config = {
-        appId: 'cementerio-v11-' + Math.floor(Math.random() * 1000000), // Randomize slightly or just use a very new unique ID. Actually, let's use a fixed unique ID version but distinct from previous.
-        // Wait, if I use random, nobody connects to each other! 
-        // Correct approach: Use a new UNIQUE fixed ID.
-        appId: 'cementerio-virtual-prod-v11-clean',
-        brokerUrls: [
-            'wss://broker.emqx.io:8084/mqtt',
-            'wss://broker.hivemq.com:8000/mqtt'
-        ],
+        appId: 'cementerio-virtual-prod-v12-fixed',
+        brokerUrl: 'wss://broker.emqx.io:8084/mqtt',
         rtcConfig: {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
@@ -1130,6 +1124,7 @@ function initMultiplayer() {
             ]
         }
     };
+
 
     // Clean exit to prevent ghost peers
     window.addEventListener('beforeunload', () => {
