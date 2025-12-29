@@ -226,8 +226,8 @@ function initThreeJS() {
     zombieGroup.visible = false; // Hidden until intro
     scene.add(zombieGroup);
 
-    // 8. Load Character (Background - Use Placeholder first)
-    loadCharacterModel('gura', false);
+    // 8. Load Character (Critical - Sync with loading bar)
+    loadCharacterModel('gura', true);
 
     // 9. Load NPCs (Lazy / Background)
     loadNPC(backgroundManager);
