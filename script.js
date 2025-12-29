@@ -1228,15 +1228,6 @@ function createPeer(id, data) {
     placeholder.castShadow = true;
     peers[id].mesh.add(placeholder);
 
-    // Mobile Performance Optimization:
-    // If on mobile and we already have > 3 peers, do NOT load the heavy GLTF.
-    // Keep them as capsules to prevent crashing.
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 800;
-    if (isMobile && Object.keys(peers).length > 3) {
-        console.warn("Mobile limit reached: using placeholder for peer", id);
-        return;
-    }
-
     // Load actual GLTF
     const loader = new GLTFLoader();
     loader.load(`${data.char}/scene.gltf`, (gltf) => {
@@ -1264,7 +1255,14 @@ function createPeer(id, data) {
             model.scale.set(s, s, s);
         }
 
-        model.traverse(n => { if (n.isMesh) { n.castShadow = true; } });
+        // Optimization: Disable shadows on mobile for peers to save GPU
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent) || window.innerWidth < 800;
+        model.traverse(n => {
+            if (n.isMesh) {
+                n.castShadow = !isMobile;
+                n.receiveShadow = !isMobile;
+            }
+        });
         peers[id].mesh.add(model);
 
         if (gltf.animations.length) {
