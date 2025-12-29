@@ -1113,9 +1113,28 @@ function initMultiplayer() {
     // We rotate brokers if possible, or just pick a very stable one.
     // 'wss://broker.emqx.io:8084/mqtt' and 'wss://broker.hivemq.com:8000/mqtt' are good choices.
     const config = {
-        appId: 'cementerio-virtual-prod-v12-fixed',
+        appId: 'cementerio-virtual-prod-v13-global',
         brokerUrl: 'wss://broker.emqx.io:8084/mqtt',
+        // Pass to both keys to be safe with library versions
         rtcConfig: {
+            iceServers: [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' },
+                { urls: 'stun:stun4.l.google.com:19302' },
+                { urls: 'stun:global.stun.twilio.com:3478' },
+                { urls: 'stun:stun.bitquick.co:3478' },
+                { urls: 'stun:stun.ekiga.net' },
+                { urls: 'stun:stun.ideasip.com' },
+                { urls: 'stun:stun.schlund.de' },
+                { urls: 'stun:stun.voiparound.com' },
+                { urls: 'stun:stun.voipbuster.com' },
+                { urls: 'stun:stun.voipstunt.com' },
+                { urls: 'stun:stun.voxgratia.org' }
+            ]
+        },
+        peerConfig: {
             iceServers: [
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
